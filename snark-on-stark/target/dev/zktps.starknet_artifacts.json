@@ -1,0 +1,1 @@
+{"version":1,"contracts":[{"id":"s4iqp3n8cmi7k","package_name":"zktps","contract_name":"Groth16VerifierBLS12_381","module_path":"zktps::groth16_verifier::Groth16VerifierBLS12_381","artifacts":{"sierra":"zktps_Groth16VerifierBLS12_381.contract_class.json","casm":"zktps_Groth16VerifierBLS12_381.compiled_contract_class.json"}}]}

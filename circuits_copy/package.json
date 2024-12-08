@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "circomlib": "^2.0.5",
+    "garaga": "^0.14.0"
+  }
+}

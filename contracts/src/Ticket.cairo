@@ -23,6 +23,11 @@ pub trait IGetTicket<TContractState> {
     );
     fn getTicket(self: @TContractState, _commitment: u256) -> Ticket::TicketCommitment;
     fn getEventdetails(self: @TContractState, _ticketEventIndex: u256) -> Ticket::TicketEvent;
+    fn invalidateTicket(
+        ref self: TContractState,
+        nullifierhash: u256,
+        commitmenthash: u256
+    ) ; 
 }
 
 #[starknet::interface]
@@ -52,13 +57,11 @@ mod Ticket {
         TicketCommitments: Map::<u256, TicketCommitment>,
         nullifierHashes: Map::<u256, bool>,
         event_id: u256,
-        verifier: felt252
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, _verifier: felt252) {
+    fn constructor(ref self: ContractState) {
         self.event_id.write(0);
-        self.verifier.write(_verifier);
     }
 
     #[derive(Drop, Serde, starknet::Store)]
@@ -99,7 +102,7 @@ mod Ticket {
         creatorOfTicket: ContractAddress,
         commitment: u256,
         nullifierhash: u256,
-        fromAddress: felt252
+
     }
 
     #[derive(Drop, Serde, starknet::Event)]
@@ -318,6 +321,42 @@ mod Ticket {
         fn getTicket(self: @ContractState, _commitment: u256) -> TicketCommitment {
             self.TicketCommitments.read(_commitment)
         }
+        fn invalidateTicket(
+            ref self: ContractState,
+            nullifierhash: u256,
+            commitmenthash: u256
+        ) {
+    
+            // the calling of this is the creator of the ticket event 
+            // assert(self.verifyTicket(commitmenthash , nullifierhash) , 'ticket is not valid'); 
+    
+            self.nullifierHashes.write(nullifierhash, true);
+    
+            self
+                .TicketCommitments
+                .write(
+                    commitmenthash,
+                    TicketCommitment { used: false, ..self.TicketCommitments.read(commitmenthash) }
+                );
+    
+            // if all this is sucessfull then transfer the token to the creator of the event  
+    
+            // transferring the token to the creator of the event 
+    
+            self
+                .emit(
+                    inValidatedTicket {
+                        buyer: self.TicketCommitments.read(commitmenthash).buyer,
+                        ticketEventIndex: self.TicketCommitments.read(commitmenthash).ticketEventIndex,
+                        creatorOfTicket: self
+                            .ticketEvents
+                            .read(self.TicketCommitments.read(commitmenthash).ticketEventIndex)
+                            .creator,
+                        commitment: commitmenthash,
+                        nullifierhash: nullifierhash,
+                    }
+                );
+        }
     }
 
     /// @notice Invalidates a ticket when called by the designated verifier contract.
@@ -331,39 +370,5 @@ mod Ticket {
     /// @param commitment1 The lower part of the commitment hash.
     /// @param commitment2 The upper part of the commitment hash.
     /// @require The caller must be the authorized verifier contract.
-    #[l1_handler]
-    fn invalidateTicketL1Handler(
-        ref self: ContractState,
-        from_address: felt252,
-        nullifier1: u128,
-        nullifier2: u128,
-        commitment1: u128,
-        commitment2: u128
-    ) {
-        let verifier = self.verifier.read();
-        assert(from_address == verifier, 'unauthorized caller');
-        let nullifierhash = u256 { low: nullifier1, high: nullifier2 };
-        let commitmenthash = u256 { low: commitment1, high: commitment2 };
-        self.nullifierHashes.write(nullifierhash, true);
-        self
-            .TicketCommitments
-            .write(
-                commitmenthash,
-                TicketCommitment { used: false, ..self.TicketCommitments.read(commitmenthash) }
-            );
-        self
-            .emit(
-                inValidatedTicket {
-                    buyer: self.TicketCommitments.read(commitmenthash).buyer,
-                    ticketEventIndex: self.TicketCommitments.read(commitmenthash).ticketEventIndex,
-                    creatorOfTicket: self
-                        .ticketEvents
-                        .read(self.TicketCommitments.read(commitmenthash).ticketEventIndex)
-                        .creator,
-                    commitment: commitmenthash,
-                    nullifierhash: nullifierhash,
-                    fromAddress: from_address,
-                }
-            );
-    }
+   
 }

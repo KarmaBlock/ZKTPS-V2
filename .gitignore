@@ -1,0 +1,39 @@
+circuits_copy/env
+circuits_copy/node_modules
+circuits_copy/build
+
+
+contracts/target/
+frontend/node_modules
+contracts/.starkli-wallets
+contracts/.env
+
+layer1/node_modules
+layer/.env
+
+# Hardhat files
+layer1/cache
+layer1/artifacts
+
+# TypeChain files
+layer1/typechain
+layer1/typechain-types
+
+# solidity-coverage files
+layer1/coverage
+layer1/coverage.json
+
+# Hardhat Ignition default folder for deployments against a local node
+layer1/ignition/deployments/chain-31337
+
+contracts/target
+
+
+node_modules
+
+db/node_modules
+
+snark-on-stack/node_modules
+snark-on-stack/build
+snark-on-stack/target
+snark-on-stack/.tool-versiona
