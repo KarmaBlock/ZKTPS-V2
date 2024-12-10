@@ -86,6 +86,11 @@ export async function Invalidate(
   );
 }
 
+
+// increasing the pattern for the system , which we can be able do in the patter 
+// 
+exort the sysnc function 
+
 export async function approve(account, amount, token_address) {
   let name = get_token_name(token_address);
   let contract_token;
@@ -151,6 +156,8 @@ export function calculatePurchaseFeeLocal(purchasePrice) {
   return [total, fee];
 }
 // voyager event api fetching
+// we have been now using this without the voyage api 
+// as the starknet does on listing the event in the starknet 
 export const fetchData = async (txnHash, index) => {
   const url = `https://sepolia-api.voyager.online/beta/events?p=1&txnHash=${encodeURIComponent(
     txnHash
